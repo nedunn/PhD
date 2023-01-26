@@ -5,6 +5,7 @@
 #***EDITS***
 #check index?
 #check path, if not correct, allow new input
+#check that len(input list) == len(output list)
 
 import os
 import pandas as pd
@@ -83,7 +84,16 @@ class Rename(Files):
 	def __init__(self,path=None): 
 		super().__init__(path) #Inherent attributes from parent class
 	
-	def single_rename(self, alt):
+	def rename(self,alt):
+		'''Function to ID if file has Frame or not, then direct to correct renaming function.
+		Low priority TO DO = combine all 3 functions into 1'''
+		if 'Frame' in alt:
+			neu=self.frame_rename(alt)
+		else:
+			neu=self.frameless_rename(alt)
+		return neu
+
+	def frameless_rename(self, alt):
 		'''Takes default numbering from lightfield and moves to head of file name
 		NOT DESIGNED FOR FRAMES
 		TO DO add FRAMES'''
@@ -93,21 +103,29 @@ class Rename(Files):
 		new_base_name=''.join(name_space_split[:-1]) #Replaces spaces (' ') with (''); joins renaming spilts incase there is more than 1
 		result_name=spectra_num[-2:]+'_'+new_base_name+'.csv'
 		return result_name
+	
+	def frame_rename(self,alt):
+		justname=alt.split('.csv')[0] #name without .csv ending
+		name_space_split=justname.split(' ')
+		num_and_frame=name_space_split[len(name_space_split)-1] #Grab last split, contains spec#-Frame-f#
+		spec_num, frame_num=num_and_frame.split('-Frame-')[0][-2:],num_and_frame.split('-Frame-')[1]
+		new_base_name=''.join(name_space_split[:-1]) #Replaces spaces (' ') with (''); joins renaming spilts incase there is more than 1
+		result_name=spec_num+'-'+frame_num+'_'+new_base_name+'.csv'
+		return result_name
 
 	def exe(self):
 		test_file=self.filelist[0]
-		cont=input('\nThe file originally named \n\t%s \n\twill be renamed as \n\t%s \nContinue? (y or n)\t'%(test_file,self.single_rename(test_file)))
+		cont=input('\nThe file originally named \n\t%s \n\twill be renamed as \n\t%s \nContinue? (y or n)\t'%(test_file,self.rename(test_file)))
 		
 		if cont.lower()=='y':
 			outdir=self.indir+'renamed/'
 			self.check_dir(outdir) #ADD code to check dir and choose to continue
 			for file in self.filelist:
 				df,header_bool=self.import_csv(self.indir+file)
-				df.to_csv(outdir+self.single_rename(file), index=False, header=header_bool)
+				df.to_csv(outdir+self.rename(file), index=False, header=header_bool)
 			print('\nProgram complete. Files can now be found in %s'%outdir)
 		else:
 			print('\nProgram ended by User Input.')
-	
 
 if __name__=='__main__':
 	mydir=Rename()
