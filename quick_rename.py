@@ -17,8 +17,12 @@ class Files:
 		self.indir=self.check_path(path) #add code for what happens if path doesnt exist
 		self.filelist=self.get_files(self.indir)
 
-	def summary(self):
-		print('%s Files accessed to be renamed:'%len(self.filelist))
+	def inspect(self):
+		self.elem1, self.elem2, self.elem3, self.elem4 = self.inspect_files() #Checks the ending of file names, compares, returns results
+		print(f'Element 1:{self.elem1}\nElement 2:{self.elem2}\nElement 3:{self.elem3}\nElement 4:{self.elem4}')
+
+	def list_files(self):
+		print('%s Files accessed:'%len(self.filelist))
 		[print(file) for file in self.filelist]
 
 	def get_files(self,path):
@@ -79,6 +83,34 @@ class Files:
 		
 		return df, str_header
 
+	def isstring(self,x):
+		'''dependancy of find_string'''
+		try:
+			float(x)
+			return False #Value can be a float/int
+		except ValueError:
+			return True #Value is a string
+	def find_string(self,input_list):
+		'''dependacy of inspect_files'''
+		single_string=''.join(list(set(input_list))) #convert from list to single string
+		only_string_charaters=[e.lower() for e in single_string if self.isstring(e)==True] #test each character, see if it is a string
+		result=list(set(only_string_charaters))
+		return ''.join(result)
+	
+	def inspect_files(self):
+		'''Looks at file names and parses out experimental information
+		TO DO utilize the element unit function (maybe make output a dictionary ex{'s':[30s,60s]}'''
+		elem1,elem2,elem3,elem4=[],[],[],[]
+		for file in self.filelist:
+			justname=file.split('.csv')[0]
+			splits=justname.split('_')
+			elem1.append(splits[-1])
+			elem2.append(splits[-2])
+			elem3.append(splits[-3])
+			elem4.append(splits[-4])
+		#element_units=[self.find_string(elem1), self.find_string(elem2), self.find_string(elem3), self.find_string(elem4)]
+		return list(set(elem1)), list(set(elem2)), list(set(elem3)), list(set(elem4))	
+
 class Rename(Files):
 	'''Class Specific for Renaming Files'''
 	def __init__(self,path=None): 
@@ -126,50 +158,9 @@ class Rename(Files):
 			print('\nProgram complete. Files can now be found in %s'%outdir)
 		else:
 			print('\nProgram ended by User Input.')
-
-class Inspect_files(Files):
-	'''Class to check the files in a directory for experimental information
-	TO DO combine with Files class?'''
-	def __init__(self,path=None):
-		super().__init__(path)
-		self.elem1, self.elem2, self.elem3, self.elem4 = self.splitit() #Checks the ending of file names, compares, returns results
-		print(self.__str__())
-
-	def __str__(self):
-		return f'Element 1:{self.elem1}\nElement 2:{self.elem2}\nElement 3:{self.elem3}\nElement 4:{self.elem4}'
-	
-	def isstring(self,x):
-		'''dependancy of find_string'''
-		try:
-			float(x)
-			return False #Value can be a float/int
-		except ValueError:
-			return True #Value is a string
-	def find_string(self,input_list):
-		'''dependacy of splitit'''
-		single_string=''.join(list(set(input_list))) #convert from list to single string
-		only_string_charaters=[e.lower() for e in single_string if self.isstring(e)==True] #test each character, see if it is a string
-		result=list(set(only_string_charaters))
-		return ''.join(result)
-	
-	def splitit(self):
-		'''Looks at file names and parses out experimental information
-		TO DO utilize the element unit function (maybe make output a dictionary ex{'s':[30s,60s]}'''
-		elem1,elem2,elem3,elem4=[],[],[],[]
-		for file in self.filelist:
-			justname=file.split('.csv')[0]
-			splits=justname.split('_')
-			elem1.append(splits[-1])
-			elem2.append(splits[-2])
-			elem3.append(splits[-3])
-			elem4.append(splits[-4])
-		#element_units=[self.find_string(elem1), self.find_string(elem2), self.find_string(elem3), self.find_string(elem4)]
-		return list(set(elem1)), list(set(elem2)), list(set(elem3)), list(set(elem4))
-
-mydir=Inspect_files('/mnt/c/Users/16162/Documents/Data/2023-01-23-cells/0_raw_renamed')
 		
-
-# if __name__=='__main__':
-# 	mydir=Rename()
-# 	mydir.summary()
-# 	mydir.exe()
+if __name__=='__main__':
+	mydir=Rename()
+	mydir.list_files()
+	mydir.inspect()
+	mydir.exe()
