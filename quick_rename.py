@@ -17,7 +17,7 @@ class Files:
 		self.indir=self.check_path(path) #add code for what happens if path doesnt exist
 		self.filelist=self.get_files(self.indir)
 
-	def inspect(self):
+	def dir_summary(self):
 		self.elem1, self.elem2, self.elem3, self.elem4 = self.inspect_files() #Checks the ending of file names, compares, returns results
 		print(f'Element 1:{self.elem1}\nElement 2:{self.elem2}\nElement 3:{self.elem3}\nElement 4:{self.elem4}')
 
@@ -31,9 +31,6 @@ class Files:
 		filelist=[file for file in os.listdir(path) if '.csv' in file]
 		return filelist
 	
-	def check_frames(self):
-		pass
-
 	def check_path(self,path):
 		'''Takes path, formats for / at end,
 		TO BE check that path exists and execute appropriate responce'''
@@ -145,7 +142,7 @@ class Rename(Files):
 		result_name=spec_num+'-'+frame_num+'_'+new_base_name+'.csv'
 		return result_name
 
-	def exe(self):
+	def name_main(self):
 		test_file=self.filelist[0]
 		cont=input('\nThe file originally named \n\t%s \n\twill be renamed as \n\t%s \nContinue? (y or n)\t'%(test_file,self.rename(test_file)))
 		
@@ -160,7 +157,39 @@ class Rename(Files):
 			print('\nProgram ended by User Input.')
 		
 if __name__=='__main__':
-	mydir=Rename()
-	mydir.list_files()
-	mydir.inspect()
-	mydir.exe()
+	'''TO DO
+	Set a default path (like to the Data directory)
+	Loop back if path does not exist
+	Make exist code its own function
+	'''
+	print('\nWelcome to the File Circus.') #Define a prompt, give user options
+	prompt ='\nEnter a directory path to begin\not enter \'quit\' to... quit.\n\t'
+	
+	def run(name,dic): #Call functions based on user input from dictionary
+		dic[name][1]()
+
+	while True:
+		mypath=input(prompt)
+
+		if mypath.lower()=='quit':
+			break
+		else:
+			while True:
+				exist=os.path.isdir(mypath)
+				if exist == True: #Path exists, initalize object and offer selections
+					print('\n\nThe Following functions are available to run on %s:\n'%mypath)
+
+					options={'1':('List the .csv files in the directory.',Rename(mypath).list_files),
+					'2':('Check file names for experimental info.',Rename(mypath).dir_summary),
+					'3':('Execute file rename program.',Rename(mypath).name_main)}
+					[print('\t%s : %s'%(o,options[o][0])) for o in options]
+
+					select=input('\nEnter a number (or \'back\' to enter new path):\t')
+
+					if select.lower()=='back':
+						break
+					else:
+						print()
+						run(select,options)
+				elif exist == False:
+					print('Path does not exist.')
